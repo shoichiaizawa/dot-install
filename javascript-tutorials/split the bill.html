@@ -2,15 +2,35 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>Split the bill to computer</title>
+  <!-- @shoichiaizawa: Edit English in the page title -->
+  <title>Split the Bill</title>
   <style>
     body {
       font-size: 16px;
       text-align: center;
-      font-family: Arial,sans-serif;
+      font-family: Arial, sans-serif;
     }
     h1 {
       font-size: 24px;
+    }
+    /* @shoichiaizawa: Style label element to align label strings
+     *
+     * This fixes the alignment problem we had on 2016-02-21.
+     * The `display: inline-block` part has the key role to fix the issue.
+     *
+     * Using the styles for the label tag, we align the label strings;
+     * see L73 and L77 (L is Line number).
+     *
+     * See below for the detailed info about where my solution came from:
+     * http://stackoverflow.com/questions/9686538/ (English)
+     *
+     * I would also advise that you do google-search with the keyword
+     * 'display: inline-block' and see what it does.
+     */
+    label {
+      display: inline-block;
+      width: 100px;
+      text-align: right;
     }
     input[type="text"] {
       padding: 7px;
@@ -21,9 +41,13 @@
       font-size: 18px;
       text-align: right;
     }
+    /* @shoichiaizawa: Change button width from 180px to 100px
+     *
+     * Change the button length, as I changed the text shown on the button.
+     */
     #btn {
       margin: 30px auto;
-      width: 180px;
+      width: 100px;
       border-radius: 5px;
       box-shadow: 0 4px 0 #e91b0c;
       background: #f44336;
@@ -31,16 +55,29 @@
       cursor: pointer;
       padding: 7px;
     }
-    #btn:hover{
+    #btn:hover {
       opacity: 0.8;
     }
   </style>
 </head>
 <body>
-  <h1>Split the bill to computer</h1>
-  <p>Total bill <input type="text" id ="price" value="0"></p>
-  <p>People <input type="text" id ="num" value="0"></p>
-  <div id="btn">Calculation</div>
+<!-- @shoichiaizawa: Edit English in the <h1> title -->
+  <h1>Bill Splitting Calculator</h1>
+  <!--
+    @shoichiaizawa: Add <label> tag for label strings
+
+    Enclose both the `Total Bill ` and `No of People ` strings by <label> tags,
+    as we defined the styles for label at L26 (Line 26).
+  -->
+  <p>
+    <label>Total Bill </label>
+    <input type="text" id ="price" value="0">
+  </p>
+  <p>
+    <label>No of People </label>
+    <input type="text" id ="num" value="0">
+  </p>
+  <div id="btn">Split the Bill</div>
   <p id="result"></p>
   <script>
   (function() {
@@ -51,36 +88,67 @@
     var btn = document.getElementById('btn');
     var result = document.getElementById('result');
 
-    priceForm.addEventListener('click',function() {
+    priceForm.addEventListener('click', function() {
       this.select();
     });
-    numForm.addEventListener('click',function() {
+    numForm.addEventListener('click', function() {
       this.select();
     });
-    btn.addEventListener('click',function() {
+    btn.addEventListener('click', function() {
       var price = priceForm.value;
       var num = numForm.value;
       var x1, x2, y1, y2;
       var unit = 100;
 
-      if (price.match(/^[1-9][0-9]*$/)&& num.match(/^[1-9][0-9]*$/)){
-        //ok
-        //result.innerHTML = 'OK!';
-        if (price % num ===  0) {
-          result.innerHTML = 'Just one parson ' + (price / num ) + ' yen.';
+      if (price.match(/^[1-9][0-9]*$/) && num.match(/^[1-9][0-9]*$/)) {
+        /* @shoichiaizawa: Modify output text for indivisible case
+         *
+         *  1. Display the yen value in bold letter
+         *
+         *    To achieve this, a number object (`price / num`)
+         *    needs to be converted into a string first,
+         *    and then using str.`bold()` method to display the converted
+         *    string as bold.
+         *
+         *    See details at Mozilla Developer Network (MDN):
+         *      - obj.toString(): http:*mzl.la/1mS27oG (日本語)
+         *      - str.bold(): http:*mzl.la/1mS2q2L (日本語)
+         *
+         *  2. Fix the lines with more than 80 characters
+         *
+         *    Many JavaScript style guides recommend MAX 80 characters per line
+         *    (CPL). I separated the long single line into multiple lines
+         *    so that every line is fit within 80 CPL.
+         *
+         *    See one of the techniques I used to break the lines:
+         *    http:*unwrongest.com/js-multiple-line-strings/ (English)
+         *
+         *  - XXX: The output two lines are not aligned
+         *
+         *         I wanted to fix this but couldn't do it quickly.
+         *
+         *  - TODO: Delete the comment once you understand my fixes
+         */
+        if (price % num === 0) {
+          result.innerHTML = 'Split the bill '
+                           + (price / num).toString().bold()
+                           + ' yen per person.';
         } else {
-          //result.innerHTML = 'something' ;
           x1 = Math.floor(price / num / unit) * unit;
           y1 = price - (x1 * num);
           x2 = Math.ceil(price / num / unit) * unit;
           y2 = Math.abs(price - (x2 * num));
-          result.innerHTML =
-          'If it is one person ' + x1 + ' yen not enough ' + y1 + ' yen.<br>' + 'If it is one person ' + x2 + ' yen too much ' + y2 + ' yen.'
+          result.innerHTML = x1.toString().bold()
+                           + ' yen per person is underpaid for the bill by '
+                           + y1.toString().bold() + ' yen!<br>'
+                           + x2.toString().bold()
+                           + ' yen per person is overpaid for the bill by '
+                           + y2.toString().bold() + ' yen!'
         }
-
       } else {
-        //error
-        result.innerHTML = 'There is an error in the input value.';
+        // error if invalid value(s) are entered in the input field
+        // @shoichiaizawa: Edit English in the output text
+        result.innerHTML = 'Invalid input error!';
       }
     });
   })();
